@@ -1,0 +1,20 @@
+[toolchain]
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+pump = "HbJP9MaXcEC4ja3zoSKo4qCQmgE6ZVeQMRVHueNipvGc"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = ".keys/dev.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+swap = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/swap.test.ts"
+initialize = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/initialize.test.ts"

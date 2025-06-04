@@ -1,0 +1,25 @@
+[package]
+name = "pump"
+version = "0.2.0"
+description = "Token Swap Program with Pyth Oracle Integration"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "pump"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+solana-program = { workspace = true }
+pyth-solana-receiver-sdk = { workspace = true }
+spl-token-2022 = { workspace = true }
+spl-token = { workspace = true }
+num_enum = { workspace = true }
