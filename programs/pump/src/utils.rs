@@ -1,9 +1,11 @@
 use anchor_lang::prelude::*;
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 use solana_program::program::invoke_signed;
+use hex;
 use spl_token_2022::{
     extension::{
         transfer_fee::{instruction::transfer_checked_with_fee, TransferFeeConfig},
+        BaseStateWithExtensions,
         StateWithExtensions,
     },
     state::Mint,
@@ -59,13 +61,11 @@ pub fn calculate_transfer_fee(
     amount: u64,
 ) -> Result<u64> {
     if let Some(config) = get_transfer_fee_config(mint_info)? {
-        let fee = (amount as u128)
-            .checked_mul(config.transfer_fee_basis_points as u128)
-            .unwrap()
-            .checked_div(10000)
-            .unwrap()
-            .min(config.maximum_fee as u128) as u64;
-        Ok(fee)
+        // Use the transfer fee parameters for the current epoch
+        let epoch = Clock::get()?.epoch;
+        Ok(config
+            .calculate_epoch_fee(epoch, amount)
+            .unwrap_or(0))
     } else {
         Ok(0)
     }
@@ -77,7 +77,11 @@ pub fn get_validated_price(
     feed_id: &str,
     max_age: u64,
 ) -> Result<i64> {
-    let feed_id_bytes = feed_id.parse::<[u8; 32]>()
+    // Feed IDs are provided as hex strings in the configuration
+    let feed_id_vec = hex::decode(feed_id)
+        .map_err(|_| error!(crate::PumpError::InvalidPriceOracle))?;
+    let feed_id_bytes: [u8; 32] = feed_id_vec
+        .try_into()
         .map_err(|_| error!(crate::PumpError::InvalidPriceOracle))?;
     
     let price_feed = price_oracle.get_price_no_older_than(
